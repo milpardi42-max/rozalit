@@ -14,6 +14,22 @@ npm run check    # typecheck + lint
 npm run build && npm start
 ```
 
+## StackBlitz preview
+
+[Open the updated source branch in StackBlitz](https://stackblitz.com/github/milpardi42-max/rozalit/tree/arena/01a0e3c7-rozalit)
+
+```bash
+npm install
+npm run dev:stackblitz
+# Second terminal, while the server is running:
+npm run smoke:stackblitz
+```
+
+The repository includes the source implementation, not just a downloadable archive.
+See [STACKBLITZ.md](STACKBLITZ.md) for cache cleanup, diagnostics, and the limits of the
+opt-in WebContainer async-context mitigation. It has been tested in Node.js; actual
+StackBlitz validation is still required. Normal production execution is unchanged.
+
 ## Live / Deploy
 
 **GitHub repo:** https://github.com/milpardi42-max/rozalit
