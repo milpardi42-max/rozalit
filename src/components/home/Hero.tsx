@@ -29,7 +29,7 @@ export function Hero({ hero, patterns, stats }: Props) {
 
   /* bg images: use hero.images if ≥2, otherwise null (fallback to single image / timer) */
   const bgImages = hero.images && hero.images.length > 1 ? hero.images : null;
-  const count = bgImages ? bgImages.length : patterns.length;
+  const count = Math.max(1, bgImages ? bgImages.length : patterns.length);
 
   /* ── slider mode: force timer even when bgImages exist ── */
   const forceSlider = hero.sliderMode === true;
@@ -124,7 +124,7 @@ export function Hero({ hero, patterns, stats }: Props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [forceSlider, parallaxOn]);
 
-  const current = patterns[active % patterns.length];
+  const current = patterns[active % Math.max(1, patterns.length)];
 
   /* ── resolve which images to show as slides ── */
   const slideImages = bgImages ?? null;
@@ -195,7 +195,7 @@ export function Hero({ hero, patterns, stats }: Props) {
               ].map(([n, label]) => (
                 <div key={String(label)}>
                   <dt className="sr-only">{label}</dt>
-                  <dd className="font-display text-[26px] leading-none tabular">{locale === "fa" ? faNum(n as number) : n}+</dd>
+                  <dd className="font-display text-[26px] leading-none tabular">{locale === "fa" ? faNum(n as number) : n}</dd>
                   <dd className="mt-1 text-caption text-white/60">{label}</dd>
                 </div>
               ))}

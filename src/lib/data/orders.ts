@@ -62,8 +62,9 @@ async function fileRead(): Promise<Order[]> {
   try {
     const raw = await fs.readFile(FILE_PATH, "utf8");
     return JSON.parse(raw) as Order[];
-  } catch {
-    return [];
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
+    throw error;
   }
 }
 
@@ -73,7 +74,7 @@ async function fileWrite(orders: Order[]): Promise<void> {
 }
 
 /* ---------- public API ---------- */
-export async function getAllOrders(): Promise<Order[]> {
+export async function getAllOrders(options: { strict?: boolean } = {}): Promise<Order[]> {
   try {
     if (redisEnabled()) {
       const { result } = await redisCmd(["GET", ORDER_KEY]);
@@ -81,7 +82,8 @@ export async function getAllOrders(): Promise<Order[]> {
       return [];
     }
     return await fileRead();
-  } catch {
+  } catch (error) {
+    if (options.strict) throw error;
     return [];
   }
 }

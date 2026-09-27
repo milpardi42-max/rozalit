@@ -1,3 +1,4 @@
+import { isStudioPortfolio, isPublishedPortfolio } from "@/lib/artist/portfolio";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -21,7 +22,8 @@ import { faNum, href, t } from "@/lib/utils";
 type Props = { params: Promise<{ locale: Locale; slug: string }> };
 
 export async function generateStaticParams() {
-  const site = await getSite();
+  const content = await getSite();
+  const site = { ...content, portfolios: content.portfolios.filter(p => isStudioPortfolio(p) && isPublishedPortfolio(p)) };
   return LOCALES.flatMap((locale) => site.portfolios.map((p) => ({ locale, slug: p.slug })));
 }
 
@@ -29,7 +31,8 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, slug } = await params;
-  const site = await getSite();
+  const content = await getSite();
+  const site = { ...content, portfolios: content.portfolios.filter(p => isStudioPortfolio(p) && isPublishedPortfolio(p)) };
   const p = site.portfolios.find((x) => x.slug === slug);
   if (!p) return {};
   const title = t(p.title, locale);
@@ -56,7 +59,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PortfolioDetail({ params }: Props) {
   const { locale, slug } = await params;
-  const site = await getSite();
+  const content = await getSite();
+  const site = { ...content, portfolios: content.portfolios.filter(p => isStudioPortfolio(p) && isPublishedPortfolio(p)) };
   const raw = site.portfolios.find((x) => x.slug === slug);
   if (!raw) notFound();
   const d = dictionaries[locale];

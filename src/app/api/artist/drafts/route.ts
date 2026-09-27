@@ -122,6 +122,7 @@ export async function POST(req: Request) {
   // portfolio
   const title = (body.title as Portfolio["title"]) ?? { fa: "پروژه جدید", en: "New project" };
   const portfolio: Portfolio = {
+    showcase: "artist",
     id: `pf-${crypto.randomBytes(6).toString("hex")}`,
     slug: makeUniqueSlug(
       (body.slug as string) || title.en || title.fa,
@@ -144,7 +145,7 @@ export async function POST(req: Request) {
     featured: false,
     isProject: Boolean(body.isProject ?? false),
     size: (body.size as Portfolio["size"]) ?? "square",
-    draftStatus: (body.draftStatus as DraftStatus) ?? "draft",
+    draftStatus: session.role === "admin" ? (body.draftStatus as DraftStatus) ?? "draft" : "draft",
   };
   await updateCollection("portfolios", [...content.portfolios, portfolio]);
   return NextResponse.json({ ok: true, portfolio }, withNoStore());
@@ -236,7 +237,7 @@ export async function PATCH(req: Request) {
     }
   }
 
-  const updated: Portfolio = { ...existing, ...body, id: existing.id, artistId: existing.artistId } as Portfolio;
+  const updated: Portfolio = { ...existing, ...body, id: existing.id, artistId: existing.artistId, showcase: existing.showcase ?? (existing.draftStatus === undefined ? "site" : "artist") } as Portfolio;
   const portfolios = content.portfolios.map((p, i) => (i === idx ? updated : p));
   await saveContent({ ...content, portfolios });
   return NextResponse.json({ ok: true, portfolio: updated }, withNoStore());

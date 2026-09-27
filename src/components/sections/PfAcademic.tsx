@@ -5,14 +5,9 @@ import { BookOpen, Users, Award, GraduationCap } from "lucide-react";
 import { usePortfolioLang } from "@/components/portfolio/PortfolioLangProvider";
 import { T, COURSES } from "@/lib/portfolio-translations";
 
-const ACHIEVEMENTS = [
-  { icon: BookOpen, valKey: "ach1Val", labelKey: "ach1Label" },
-  { icon: Award,    valKey: "ach2Val", labelKey: "ach2Label" },
-  { icon: Users,    valKey: "ach3Val", labelKey: "ach3Label" },
-  { icon: GraduationCap, valKey: "ach4Val", labelKey: "ach4Label" },
-] as const;
+const ICONS = [BookOpen, Award, GraduationCap, Users];
 
-export function PfAcademic() {
+export function PfAcademic({ stats }: { stats: import("@/lib/razieh-profile").ProfileStat[] }) {
   const { lang } = usePortfolioLang();
 
   return (
@@ -56,16 +51,18 @@ export function PfAcademic() {
 
         {/* achievement cards */}
         <div className="reveal mb-14 grid grid-cols-2 gap-4 md:grid-cols-4">
-          {ACHIEVEMENTS.map(({ icon: Icon, valKey, labelKey }) => (
+          {stats.map(({ value, label }, index) => {
+            const Icon = ICONS[index % ICONS.length];
+            return (
             <div
-              key={valKey}
+              key={label.en}
               className="rounded-xl border border-pf-terracotta/20 bg-white p-6 text-center transition-shadow hover:shadow-md"
             >
               <Icon className="mx-auto mb-3 h-6 w-6 text-pf-terracotta/60" />
-              <div className="font-display text-2xl text-pf-terracotta">{T(valKey, lang)}</div>
-              <div className="mt-1 text-xs text-pf-charcoal/55">{T(labelKey, lang)}</div>
+              <div className="font-display text-2xl text-pf-terracotta">{value[lang]}</div>
+              <div className="mt-1 text-xs text-pf-charcoal/55">{label[lang]}</div>
             </div>
-          ))}
+          ); })}
         </div>
 
         {/* courses */}

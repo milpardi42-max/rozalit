@@ -1,47 +1,47 @@
+import { isStudioPortfolio, isPublishedPortfolio } from "@/lib/artist/portfolio";
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { PageHero } from "@/components/ui/PageHero";
+import { PortfolioHero } from "@/components/portfolio/PortfolioHero";
+import { RAZIEH_PROFILE } from "@/lib/razieh-profile";
 import { PortfolioGrid } from "@/components/portfolio/PortfolioGrid";
 import { PortfolioCollaboration, PortfolioIntro } from "@/components/portfolio/PortfolioIntro";
 import { enrichPortfolio, getSite } from "@/lib/data/queries";
 import { dictionaries } from "@/lib/i18n/dictionary";
 import type { Locale } from "@/lib/i18n/types";
-import { href, t } from "@/lib/utils";
+import { t } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
   const { locale } = await params;
-  const site = await getSite();
+  const content = await getSite();
+  const site = { ...content, portfolios: content.portfolios.filter(p => isStudioPortfolio(p) && isPublishedPortfolio(p)) };
   const m = site.seo.find((s) => s.path === "/portfolio");
   return m ? { title: { absolute: t(m.title, locale) }, description: t(m.description, locale) } : { title: dictionaries[locale].nav.portfolio };
 }
 
 export default async function PortfolioPage({ params }: { params: Promise<{ locale: Locale }> }) {
   const { locale } = await params;
-  const site = await getSite();
-  const d = dictionaries[locale];
+  const content = await getSite();
+  const site = { ...content, portfolios: content.portfolios.filter(p => isStudioPortfolio(p) && isPublishedPortfolio(p)) };
   const items = site.portfolios.map((p) => enrichPortfolio(site, p));
   const usedCatIds = new Set(site.portfolios.map((p) => p.categoryId));
   const categories = site.categories.filter((c) => usedCatIds.has(c.id)).sort((a, b) => a.order - b.order);
 
-  const coverImage = site.portfolios[0]?.cover ?? site.hero.image;
-
-  const breadcrumb = [
-    { label: d.nav.home, href: href(locale, "/") },
-    { label: d.nav.portfolio },
-  ];
+  // Studio-specific media; never use an artist portfolio's first item as the hero.
+  const instructor = site.artists.find(artist => artist.id === "artist-razieh-khairipour");
 
   return (
     <>
-      <PageHero
-        eyebrow={d.nav.portfolio}
-        title={locale === "fa" ? "گالری پروژه‌های اجراشده" : "Realised project gallery"}
-        description={locale === "fa" ? "از دیوار تا فضا — پروژه‌هایی که الگو را به زندگی تبدیل کردند." : "From wall to space — projects where pattern became life."}
-        image={coverImage}
-        breadcrumb={breadcrumb}
+      <PortfolioHero
         locale={locale}
-        zoomDirection="out"
+        background="/images/hero/hero-back.webp"
+        video={{ src: "/videos/academy/preview.mp4", poster: "/images/portfolios/pf-process.jpg" }}
+        instructor={{
+          name: instructor?.name ?? RAZIEH_PROFILE.name,
+          profession: instructor?.profession ?? RAZIEH_PROFILE.role,
+          avatar: instructor?.avatar,
+        }}
       />
 
       {/* The founder's introduction — who the studio belongs to, in full */}

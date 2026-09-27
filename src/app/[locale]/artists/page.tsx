@@ -1,3 +1,4 @@
+import { isPublicArtist, publicArtist } from "@/lib/artist/public-profile";
 import type { Metadata } from "next";
 import { ArtistsHubView } from "@/components/artist/ArtistsHubView";
 import { artistStats, getSite } from "@/lib/data/queries";
@@ -6,28 +7,40 @@ import type { Locale } from "@/lib/i18n/types";
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: Locale }>;
+}): Promise<Metadata> {
   const { locale } = await params;
   const d = dictionaries[locale];
   return {
     title: `${d.nav.artists} | ${d.brand}`,
-    description: d.home.artistsDesc,
+    description:
+      locale === "fa"
+        ? "کشف هنرمندان رزی آتلیه؛ معرفی، نمونه‌کارها و صفحهٔ اختصاصی طراحان و هنرمندان."
+        : "Meet the artists of Rosie Atelier. Explore their profiles, portfolios and creative practice.",
+    alternates: { canonical: `/${locale}/artists` },
   };
 }
 
-export default async function ArtistsPage({ params }: { params: Promise<{ locale: Locale }> }) {
-  const { locale } = await params;
+export default async function ArtistsPage() {
   const site = await getSite();
 
-  const artists = site.artists.map((a) => {
+  const artists = site.artists.filter(isPublicArtist).map((a) => {
     const s = artistStats(site, a.id);
     const portfolioImages = s.portfolios.map((pf) => pf.cover).filter(Boolean);
     const patternImages = s.patterns.map((p) => p.image).filter(Boolean);
-    const serviceImages = (a.services ?? []).map((srv) => srv.image).filter(Boolean);
-    const allPreviews = Array.from(new Set([...serviceImages, ...patternImages, ...portfolioImages]));
+    const serviceImages = (a.services ?? [])
+      .filter((srv) => srv.active !== false)
+      .map((srv) => srv.image)
+      .filter(Boolean);
+    const allPreviews = Array.from(
+      new Set([...serviceImages, ...patternImages, ...portfolioImages]),
+    );
 
     return {
-      ...a,
+      ...publicArtist(a),
       featuredPattern: s.patterns[0]
         ? {
             id: s.patterns[0].id,
@@ -44,7 +57,7 @@ export default async function ArtistsPage({ params }: { params: Promise<{ locale
     };
   });
 
-  const heroImage = site.artists[1]?.cover || site.artists[0]?.cover || site.hero.image;
+  const heroImage = artists[0]?.cover || site.hero.image;
 
   return <ArtistsHubView artists={artists} heroImage={heroImage} />;
 }

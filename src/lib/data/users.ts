@@ -81,8 +81,9 @@ async function fileRead(): Promise<StoredUser[]> {
   try {
     const raw = await fs.readFile(FILE_PATH, "utf8");
     return JSON.parse(raw) as StoredUser[];
-  } catch {
-    return [];
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
+    throw error;
   }
 }
 
@@ -92,7 +93,7 @@ async function fileWrite(users: StoredUser[]): Promise<void> {
 }
 
 /* ---------- public API ---------- */
-export async function getAllUsers(): Promise<StoredUser[]> {
+export async function getAllUsers(options: { strict?: boolean } = {}): Promise<StoredUser[]> {
   try {
     if (redisEnabled()) {
       const { result } = await redisCmd(["GET", USER_KEY]);
@@ -100,7 +101,8 @@ export async function getAllUsers(): Promise<StoredUser[]> {
       return [];
     }
     return await fileRead();
-  } catch {
+  } catch (error) {
+    if (options.strict) throw error;
     return [];
   }
 }
@@ -272,8 +274,8 @@ async function createPendingArtist(
     },
     featured: false,
     followers: 0,
-    rating: 5,
-    reviewsCount: 1,
+    rating: 0,
+    reviewsCount: 0,
     tags: [
       extra?.specialty?.includes("پتینه") ? "patina" : "surface-design",
       "custom-art",

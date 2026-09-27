@@ -1,3 +1,5 @@
+import { isStudioPortfolio, isPublishedPortfolio } from "@/lib/artist/portfolio";
+import { siteStatistics } from "@/lib/data/statistics";
 import type { Metadata } from "next";
 import { Hero } from "@/components/home/Hero";
 import {
@@ -34,13 +36,14 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
   const { locale } = await params;
   const site = await getSite();
   const d = dictionaries[locale];
+  const stats = siteStatistics(site);
 
   const sections = site.homeSections.filter((s) => s.enabled).sort((a, b) => a.order - b.order);
   const on = (k: string) => sections.some((s) => s.key === k);
 
   const patterns = site.patterns.map((p) => enrichPattern(site, p));
   const products = site.products.slice().sort((a, b) => a.order - b.order).map((p) => enrichProduct(site, p));
-  const portfolios = site.portfolios.map((p) => enrichPortfolio(site, p));
+  const portfolios = site.portfolios.filter(p => isStudioPortfolio(p) && isPublishedPortfolio(p)).map((p) => enrichPortfolio(site, p));
   const education = site.education.map((e) => enrichEducation(site, e));
   const artists = site.artists
     .filter((a) => a.featured)
@@ -54,7 +57,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
 
   return (
     <>
-      {on("hero") && <Hero hero={site.hero} patterns={heroPatterns} stats={{ patterns: site.patterns.length * 40, artists: site.artists.length * 30, projects: site.portfolios.length * 20 }} />}
+      {on("hero") && <Hero hero={site.hero} patterns={heroPatterns} stats={stats} />}
       {on("discovery") && <DiscoverySection patterns={patterns.filter((p) => p.featured)} categories={featuredCats} />}
       {featuredCats.length > 0 && <CategoriesSection categories={featuredCats} />}
       {on("trending") && <PatternRail id="trending" eyebrow={d.common.trending} title={d.home.trendingTitle} description={d.home.trendingDesc} patterns={patterns.filter((p) => p.trending)} hrefPath="/patterns?sort=trending" tone="secondary" />}
