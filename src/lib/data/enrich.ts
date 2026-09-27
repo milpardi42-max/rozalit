@@ -1,3 +1,4 @@
+import { artistPortfolioWorks } from "@/lib/artist/portfolio";
 import type { Artist, EducationItem, Pattern, Portfolio, Product, SiteContent } from "../types";
 
 export type Enriched<T> = T & { artist: Artist | null };
@@ -67,7 +68,7 @@ export function artistStats(site: SiteContent, artistId: string) {
   return {
     patterns: site.patterns.filter((p) => p.artistId === artistId),
     products: site.products.filter((p) => p.artistId === artistId),
-    portfolios: site.portfolios.filter((p) => p.artistId === artistId),
+    portfolios: artistPortfolioWorks(site.portfolios, artistId),
     education: site.education.filter((e) => e.authorId === artistId),
   };
 }

@@ -1,3 +1,4 @@
+import { siteStatistics } from "@/lib/data/statistics";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { PageHero } from "@/components/ui/PageHero";
@@ -17,6 +18,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
   const { locale } = await params;
   const site = await getSite();
   const d = dictionaries[locale];
+  const stats = siteStatistics(site);
   const fa = locale === "fa";
   const values = fa ? [["الگو", "زبان مشترک سطح و فضا."], ["طراحی", "دقیق، مینیمال، بادوام."], ["خلاقیت", "با احترام به ریشه و نگاه به آینده."], ["سبک زندگی", "چیزهایی که هر روز با آن‌ها زندگی می‌کنیم."]] : [["Pattern", "The shared language of surface and space."], ["Design", "Precise, minimal, lasting."], ["Creativity", "Respecting roots, looking forward."], ["Lifestyle", "The things we live with every day."]];
 
@@ -42,7 +44,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
           <p>{fa ? "امروز رزی آتلیه یک مارکت‌پلیس الگو، یک فروشگاه محصولات اختصاصی، یک گالری پورتفولیو و یک آکادمی است؛ همه در یک اکوسیستم." : "Today Rosie Atelier is a pattern marketplace, an exclusive product store, a portfolio gallery and an academy — all in one ecosystem."}</p>
         </div>
         <dl className="grid grid-cols-2 gap-4 lg:col-span-5">
-          {[[site.patterns.length * 40, d.home.heroStat1], [site.artists.length * 30, d.home.heroStat2], [0, d.home.heroStat3], [2, fa ? "زبان" : "languages"]].map(([n, l]) => <Reveal key={String(l)} className="rounded-lg border border-border p-6"><dd className="font-display text-h1 tabular">{fa ? faNum(n as number) : n}+</dd><dt className="text-caption text-foreground-secondary">{l}</dt></Reveal>)}
+          {[[stats.patterns, d.home.heroStat1], [stats.artists, d.home.heroStat2], [stats.projects, d.home.heroStat3], [2, fa ? "زبان" : "languages"]].map(([n, l]) => <Reveal key={String(l)} className="rounded-lg border border-border p-6"><dd className="font-display text-h1 tabular">{fa ? faNum(n as number) : n}</dd><dt className="text-caption text-foreground-secondary">{l}</dt></Reveal>)}
         </dl>
       </section>
       <section className="bg-background-secondary"><div className="container-x section-y grid gap-6 md:grid-cols-4">

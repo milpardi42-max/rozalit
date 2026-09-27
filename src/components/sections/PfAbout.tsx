@@ -4,7 +4,7 @@ import Image from "next/image";
 import { usePortfolioLang } from "@/components/portfolio/PortfolioLangProvider";
 import { T } from "@/lib/portfolio-translations";
 
-export function PfAbout() {
+export function PfAbout({ stats }: { stats: import("@/lib/razieh-profile").ProfileStat[] }) {
   const { lang } = usePortfolioLang();
 
   return (
@@ -26,10 +26,7 @@ export function PfAbout() {
                   className="object-cover object-top grayscale transition-all duration-700 hover:grayscale-0"
                 />
               </div>
-              {/* experience badge */}
-              <div className="absolute -bottom-2 end-4 rounded-full bg-pf-terracotta px-4 py-2 text-sm font-medium text-pf-cream shadow-lg">
-                {T("experience", lang)}
-              </div>
+
             </div>
           </div>
 
@@ -49,16 +46,10 @@ export function PfAbout() {
 
             {/* stats */}
             <div className="mt-8 grid grid-cols-3 divide-x divide-pf-terracotta/20 border-t border-pf-terracotta/20 pt-6 rtl:divide-x-reverse">
-              {(
-                [
-                  ["stat1Val", "stat1Label"],
-                  ["stat2Val", "stat2Label"],
-                  ["stat3Val", "stat3Label"],
-                ] as const
-              ).map(([val, label]) => (
-                <div key={val} className="pe-4 ps-0 first:ps-0 rtl:last:ps-4">
-                  <div className="font-display text-2xl text-pf-terracotta">{T(val, lang)}</div>
-                  <div className="mt-0.5 text-xs text-pf-charcoal/55">{T(label, lang)}</div>
+              {stats.slice(0, 3).map(({ value, label }) => (
+                <div key={label.en} className="pe-4 ps-0 first:ps-0 rtl:last:ps-4">
+                  <div className="font-display text-2xl text-pf-terracotta">{value[lang]}</div>
+                  <div className="mt-0.5 text-xs text-pf-charcoal/55">{label[lang]}</div>
                 </div>
               ))}
             </div>

@@ -19,14 +19,16 @@ export function PortfolioCard({
   className,
   priority,
   overlay = true,
+  hrefPath,
 }: {
   item: PortfolioCardData;
   className?: string;
   priority?: boolean;
   overlay?: boolean;
+  hrefPath?: string;
 }) {
   const { locale, dict } = useLocale();
-  const url = href(locale, `/portfolio/${item.slug}`);
+  const url = href(locale, hrefPath ?? `/portfolio/${item.slug}`);
   const cardRef = useRef<HTMLAnchorElement>(null);
   const shineRef = useRef<HTMLSpanElement>(null);
   const innerRef = useRef<HTMLSpanElement>(null);

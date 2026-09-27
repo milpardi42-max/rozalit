@@ -1,3 +1,4 @@
+import { isStudioPortfolio, isPublishedPortfolio } from "@/lib/artist/portfolio";
 import { NextResponse } from "next/server";
 import { getContent } from "@/lib/data/store";
 
@@ -17,7 +18,7 @@ export async function GET() {
     patterns: site.patterns.map(({ slug, title, image, sku }) => ({ slug, title, image, sku })),
     products: site.products.map(({ slug, title, sku, colors }) => ({ slug, title, sku, image: colors[0]?.image ?? "" })),
     artists: site.artists.map(({ slug, name, profession, avatar }) => ({ slug, name, profession, avatar })),
-    portfolios: site.portfolios.map(({ slug, title, cover }) => ({ slug, title, cover })),
+    portfolios: site.portfolios.filter(p => isStudioPortfolio(p) && isPublishedPortfolio(p)).map(({ slug, title, cover }) => ({ slug, title, cover })),
     education: site.education.map(({ slug, title, image, type }) => ({ slug, title, image, type })),
     categories: site.categories.map(({ slug, name, image }) => ({ slug, name, image })),
   };

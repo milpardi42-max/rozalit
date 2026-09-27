@@ -68,7 +68,8 @@ export function previewVideoOf(item: EducationItem | null | undefined): CourseVi
 }
 
 export function academyOverview(site: SiteContent, reservations: AcademyReservation[]): AcademyOverview {
-  const active = reservations.filter((reservation) => reservation.status !== "cancelled");
+  const slugs = new Set(site.education.map((item) => item.slug));
+  const active = reservations.filter((reservation) => reservation.status !== "cancelled" && slugs.has(reservation.eventSlug));
   const bySlug: Record<string, AcademyItemStats> = {};
 
   for (const item of site.education) {
@@ -119,7 +120,7 @@ export function academyOverview(site: SiteContent, reservations: AcademyReservat
     instructors: instructors.size,
     categories: categoriesUsed.size,
     enrollments: active.length,
-    students: new Set(active.map((reservation) => reservation.email)).size,
+    students: new Set(active.map((reservation) => reservation.email.trim().toLowerCase())).size,
     upcomingEvents: site.education.filter((item) => item.liveEvent?.status === "scheduled").length,
     liveNow: site.education.filter((item) => item.liveEvent?.status === "live").length,
     bySlug,

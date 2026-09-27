@@ -1,3 +1,6 @@
+import { getSite } from "@/lib/data/queries";
+import { founderStatistics } from "@/lib/data/founder-statistics";
+export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import type { Locale } from "@/lib/i18n/types";
 import RaziehPortfolioClient from "./RaziehClient";
@@ -10,5 +13,5 @@ export const metadata: Metadata = {
 
 export default async function RaziehPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  return <RaziehPortfolioClient locale={locale as Locale} />;
+  return <RaziehPortfolioClient locale={locale as Locale} stats={await founderStatistics(await getSite())} />;
 }

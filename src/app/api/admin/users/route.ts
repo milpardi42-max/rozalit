@@ -16,8 +16,12 @@ export async function GET() {
   if (!(await requireAdmin())) {
     return NextResponse.json({ ok: false, error: "unauthorized" }, withNoStore({ status: 401 }));
   }
-  const users = await getAllUsers();
-  return NextResponse.json({ ok: true, users: users.map(toPublicUser) }, withNoStore());
+  try {
+    const users = await getAllUsers({ strict: true });
+    return NextResponse.json({ ok: true, users: users.map(toPublicUser) }, withNoStore());
+  } catch {
+    return NextResponse.json({ ok: false, error: "users_unavailable" }, withNoStore({ status: 503 }));
+  }
 }
 
 /** PATCH /api/admin/users — update role */

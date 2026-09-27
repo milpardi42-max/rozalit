@@ -123,24 +123,24 @@ function Sparkline({ points, color = "#b5713a" }: { points: number[]; color?: st
 /* ─── BarChart هفتگی ─── */
 function WeeklyChart({ data }: { data: DailyPoint[] }) {
   const max = Math.max(...data.map((d) => d.revenue), 1);
-  const dayNames = ["ش", "ی", "د", "س", "چ", "پ", "ج"];
+
   return (
     <div className="flex h-32 items-end gap-1.5 pt-2">
       {data.map((d, i) => {
         const pct = (d.revenue / max) * 100;
         const isToday = i === data.length - 1;
         return (
-          <div key={d.date} className="group relative flex flex-1 flex-col items-center gap-1">
+          <div key={d.date} className="group relative flex h-full flex-1 flex-col justify-end items-center gap-1">
             <div className="pointer-events-none absolute bottom-full mb-1.5 hidden whitespace-nowrap rounded-lg border border-border bg-white px-2.5 py-1.5 text-xs shadow-medium group-hover:block" style={{ zIndex: 10 }}>
               <p className="font-semibold text-foreground">{tomanFull(d.revenue)}</p>
               <p className="text-muted">{d.count} سفارش</p>
             </div>
-            <div className="relative w-full overflow-hidden rounded-t-md" style={{ height: `${Math.max(pct, 4)}%` }}>
+            <div className="relative w-full overflow-hidden rounded-t-md" style={{ height: `${pct}%` }}>
               <div className={cn("absolute inset-0 transition-all duration-700", isToday ? "bg-accent" : "bg-[#1e2230]/15 group-hover:bg-[#1e2230]/25")} />
               {isToday && <div className="absolute inset-0 animate-pulse bg-accent/30" />}
             </div>
             <span className={cn("text-[10px]", isToday ? "font-bold text-accent" : "text-muted")}>
-              {dayNames[i % 7]}
+              {new Date(`${d.date}T12:00:00Z`).toLocaleDateString("fa-IR", { weekday: "short", timeZone: "Asia/Tehran" })}
             </span>
           </div>
         );
@@ -310,6 +310,7 @@ export function LiveDashboard({
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState(false);
 
   const fetchStats = async (showSpin = false) => {
     if (showSpin) setRefreshing(true);
@@ -318,14 +319,18 @@ export function LiveDashboard({
         fetch("/api/admin/stats", { cache: "no-store" }),
         fetch("/api/admin/users", { cache: "no-store" }),
       ]);
-      if (statsRes.ok) {
-        const d = await statsRes.json() as { ok: boolean } & DashPayload;
-        if (d.ok) { setLive(d); setLastUpdated(new Date()); }
-      }
-      if (usersRes.ok) {
-        const d = await usersRes.json() as { ok: boolean; users: PublicUser[] };
-        if (d.ok) setUsers(d.users);
-      }
+      if (!statsRes.ok || !usersRes.ok) throw new Error("stats_unavailable");
+      const [dashboard, userData] = await Promise.all([
+        statsRes.json() as Promise<{ ok: boolean } & DashPayload>,
+        usersRes.json() as Promise<{ ok: boolean; users: PublicUser[] }>,
+      ]);
+      if (!dashboard.ok || !userData.ok) throw new Error("stats_unavailable");
+      setLive(dashboard);
+      setUsers(userData.users);
+      setLastUpdated(new Date());
+      setError(false);
+    } catch {
+      setError(true);
     } finally {
       setLoading(false);
       if (showSpin) setTimeout(() => setRefreshing(false), 600);
@@ -387,8 +392,8 @@ export function LiveDashboard({
         <div>
           <h1 className="text-lg font-bold text-foreground">داشبورد مدیریت</h1>
           <div className="mt-0.5 flex items-center gap-2 text-xs text-muted">
-            <OnlinePulse />
-            <span>آنلاین · به‌روز‌رسانی خودکار هر ۳۰ ثانیه</span>
+            {!error && <OnlinePulse />}
+            <span>{error ? "دریافت آمار ناموفق؛ اطلاعات قبلی ممکن است قدیمی باشد" : loading ? "در حال دریافت آمار…" : "به‌روز‌رسانی خودکار هر ۳۰ ثانیه"}</span>
             {lastUpdated && (
               <span className="text-muted/60">· آخرین بار: {timeAgo(lastUpdated.toISOString())}</span>
             )}
@@ -435,7 +440,7 @@ export function LiveDashboard({
               <div>
                 <p className="text-xs font-medium text-muted">سفارشات امروز</p>
                 <p className="mt-1.5 text-3xl font-bold tabular-nums text-foreground">
-                  {loading ? <span className="animate-pulse text-muted">—</span> : <CountUp to={todayCount} />}
+                  {loading || !live ? <span className="animate-pulse text-muted">—</span> : <CountUp to={todayCount} />}
                 </p>
               </div>
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
@@ -453,13 +458,13 @@ export function LiveDashboard({
             </div>
           </div>
 
-          {/* درآمد امروز */}
+          {/* ارزش سفارش‌های تأییدشده امروز */}
           <div className="rounded-xl border border-border bg-white p-4 shadow-soft">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-xs font-medium text-muted">درآمد امروز</p>
+                <p className="text-xs font-medium text-muted">ارزش سفارش‌های تأییدشده امروز</p>
                 <p className="mt-1.5 text-3xl font-bold tabular-nums text-foreground">
-                  {loading ? <span className="animate-pulse text-muted">—</span> : tomanFormat(todayRev)}
+                  {loading || !live ? <span className="animate-pulse text-muted">—</span> : tomanFormat(todayRev)}
                   {!loading && <span className="mr-1 text-sm font-medium text-muted">ت</span>}
                 </p>
               </div>
@@ -478,13 +483,13 @@ export function LiveDashboard({
             </div>
           </div>
 
-          {/* جمع کل درآمد */}
+          {/* جمع ارزش کل سفارش‌های تأییدشده */}
           <div className="rounded-xl border border-border bg-white p-4 shadow-soft">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-xs font-medium text-muted">کل درآمد</p>
+                <p className="text-xs font-medium text-muted">ارزش کل سفارش‌های تأییدشده</p>
                 <p className="mt-1.5 text-3xl font-bold tabular-nums text-foreground">
-                  {loading ? <span className="animate-pulse text-muted">—</span> : tomanFormat(live?.stats.totalRevenue ?? 0)}
+                  {loading || !live ? <span className="animate-pulse text-muted">—</span> : tomanFormat(live?.stats.totalRevenue ?? 0)}
                   {!loading && <span className="mr-1 text-sm font-medium text-muted">ت</span>}
                 </p>
               </div>
@@ -494,10 +499,10 @@ export function LiveDashboard({
             </div>
             <div className="mt-3 flex flex-wrap gap-1.5">
               <span className="rounded-full bg-background-secondary px-2 py-0.5 text-[10px] text-muted">
-                جمع سفارشات: {farsiNum(live?.stats.totalOrders ?? 0)}
+                جمع سفارشات: {live ? farsiNum(live.stats.totalOrders) : "—"}
               </span>
               <span className="rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[10px] text-amber-700">
-                در انتظار: {farsiNum(live?.stats.pendingOrders ?? 0)}
+                در انتظار: {live ? farsiNum(live.stats.pendingOrders) : "—"}
               </span>
             </div>
           </div>
@@ -508,7 +513,7 @@ export function LiveDashboard({
               <div>
                 <p className="text-xs font-medium text-muted">کاربران</p>
                 <p className="mt-1.5 text-3xl font-bold tabular-nums text-foreground">
-                  {loading ? <span className="animate-pulse text-muted">—</span> : <CountUp to={totalUsers} />}
+                  {loading || !live ? <span className="animate-pulse text-muted">—</span> : <CountUp to={totalUsers} />}
                 </p>
               </div>
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-purple-50 text-purple-600">
@@ -517,10 +522,10 @@ export function LiveDashboard({
             </div>
             <div className="mt-3 flex flex-wrap gap-1.5">
               <span className="flex items-center gap-1 rounded-full bg-blue-50 border border-blue-200 px-2 py-0.5 text-[10px] text-blue-700">
-                <UserCheck className="h-2.5 w-2.5" />{farsiNum(artistUsers)} هنرمند
+                <UserCheck className="h-2.5 w-2.5" />{live ? farsiNum(artistUsers) : "—"} هنرمند
               </span>
               <span className="flex items-center gap-1 rounded-full bg-background-secondary px-2 py-0.5 text-[10px] text-muted">
-                <UserX className="h-2.5 w-2.5" />{farsiNum(normalUsers)} کاربر عادی
+                <UserX className="h-2.5 w-2.5" />{live ? farsiNum(normalUsers) : "—"} کاربر عادی
               </span>
               {recentUsers > 0 && (
                 <span className="rounded-full bg-green-50 border border-green-200 px-2 py-0.5 text-[10px] text-green-700">
@@ -539,24 +544,22 @@ export function LiveDashboard({
         <div className="lg:col-span-2 rounded-xl border border-border bg-white p-5 shadow-soft">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-semibold text-foreground">درآمد ۷ روز گذشته</p>
-              <p className="text-xs text-muted">به تومان</p>
+              <p className="text-sm font-semibold text-foreground">ارزش سفارش‌های تأییدشده ۷ روز گذشته</p>
+              <p className="text-xs text-muted">به تومان · زمان تهران · بر مبنای تاریخ ثبت؛ نه تأیید پرداخت</p>
             </div>
             <span className="rounded-full bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent">
-              {live ? tomanFull(live.stats.totalRevenue) : "—"}
+              {live ? tomanFull(live.dailyRevenue.reduce((sum, day) => sum + day.revenue, 0)) : "—"}
             </span>
           </div>
           {live ? (
             <WeeklyChart data={live.dailyRevenue} />
           ) : (
-            <div className="mt-4 flex h-32 items-end gap-1.5">
-              {[40, 65, 30, 80, 55, 90, 70].map((h, i) => (
-                <div key={i} className="flex-1 animate-pulse rounded-t-md bg-background-secondary" style={{ height: `${h}%` }} />
-              ))}
+            <div className="flex h-32 items-center justify-center text-xs text-muted">
+              {error ? "آمار در دسترس نیست؛ دوباره تلاش کنید" : "در حال دریافت آمار…"}
             </div>
           )}
           <div className="mt-3 flex items-center justify-between text-xs text-muted">
-            <span>جمع کل: {farsiNum(live?.stats.totalOrders ?? 0)} سفارش</span>
+            <span>این هفته: {live ? farsiNum(live.dailyRevenue.reduce((sum, day) => sum + day.count, 0)) : "—"} سفارش</span>
             <span className="flex items-center gap-1"><Circle className="h-2 w-2 fill-accent text-accent" /> امروز</span>
           </div>
         </div>
@@ -636,7 +639,7 @@ export function LiveDashboard({
             label="هنرمندان"
             total={data.artists.length}
             featured={featuredArtists}
-            sub={`${farsiNum(data.artists.filter(a => a.rating >= 4).length)} امتیاز ≥ ۴`}
+            sub="بر اساس پروفایل‌های ثبت‌شده"
             color="bg-purple-50 text-purple-600"
             onClick={() => setSection("artists")}
           />

@@ -1,4 +1,5 @@
 "use client";
+import type { ProfileStat } from "@/lib/razieh-profile";
 
 import { PortfolioLangProvider } from "@/components/portfolio/PortfolioLangProvider";
 import { PfHero } from "@/components/sections/PfHero";
@@ -11,25 +12,25 @@ import { useReveal } from "@/hooks/use-reveal";
 import type { Locale } from "@/lib/i18n/types";
 import type { Lang } from "@/lib/portfolio-translations";
 
-function PortfolioInner() {
+function PortfolioInner({ stats }: { stats: ProfileStat[] }) {
   useReveal();
   return (
     <>
       <PfHero />
-      <PfAbout />
+      <PfAbout stats={stats} />
       <PfPortfolio />
       <PfPhilosophy />
-      <PfAcademic />
+      <PfAcademic stats={stats} />
       <PfContact />
     </>
   );
 }
 
-export default function RaziehPortfolioClient({ locale }: { locale: Locale }) {
+export default function RaziehPortfolioClient({ locale, stats }: { locale: Locale; stats: ProfileStat[] }) {
   const lang: Lang = locale === "fa" ? "fa" : "en";
   return (
     <PortfolioLangProvider initialLang={lang}>
-      <PortfolioInner />
+      <PortfolioInner stats={stats} />
     </PortfolioLangProvider>
   );
 }

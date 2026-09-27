@@ -1131,7 +1131,7 @@ function newArtist(): Artist {
   return {
     id, slug: `artist-${id}`, name: L("هنرمند جدید", "New Artist"), profession: L("", ""),
     bio: L("", ""), avatar: "/images/artists/niloufar-rad.jpg", cover: "/images/artists/cover-niloufar.jpg",
-    location: L("تهران", "Tehran"), social: {}, featured: true, followers: 0, rating: 5, reviewsCount: 0,
+    location: L("تهران", "Tehran"), social: {}, featured: true, followers: 0, rating: 0, reviewsCount: 0,
   };
 }
 
@@ -1152,8 +1152,7 @@ function ArtistCard({ artist: a, onEdit, onDelete, onToggleFeatured }: { artist:
         <p className="text-xs text-muted">{t(a.profession, "fa")}</p>
         <div className="mt-2 flex items-center justify-between">
           <div className="flex items-center gap-3 text-xs text-muted">
-            <span>⭐ {a.rating}</span>
-            <span>{a.followers.toLocaleString("fa-IR")}</span>
+            <span>آمار امتیاز و دنبال‌کننده ثبت نمی‌شود</span>
           </div>
           <div className="flex gap-1.5">
             <button onClick={onToggleFeatured} className={cn("rounded-full border px-2 py-0.5 text-[10px] font-medium", a.featured ? "border-accent bg-accent/10 text-accent" : "border-border text-muted")}>
@@ -1187,8 +1186,6 @@ function ArtistEditModal({ artist, onSave, onClose, isNew }: { artist: Artist; o
           <FRow label="تصویر کاور"><FInput dir="ltr" value={a.cover} onChange={v => set({ cover: v })} /></FRow>
           <FRow label="اینستاگرام"><FInput dir="ltr" value={a.social.instagram ?? ""} onChange={v => set({ social: { ...a.social, instagram: v || undefined } })} /></FRow>
           <FRow label="بهنس"><FInput dir="ltr" value={a.social.behance ?? ""} onChange={v => set({ social: { ...a.social, behance: v || undefined } })} /></FRow>
-          <FRow label="دنبال‌کننده"><FNumber value={a.followers} onChange={v => set({ followers: v })} /></FRow>
-          <FRow label="امتیاز"><FNumber value={a.rating} onChange={v => set({ rating: v })} /></FRow>
         </div>
         <FCheck label="هنرمند منتخب (نمایش در صفحه اصلی)" checked={a.featured} onChange={v => set({ featured: v })} />
         <div className="flex justify-end gap-2 border-t border-border pt-4">

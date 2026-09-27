@@ -1,3 +1,5 @@
+import { isPublicArtist } from "@/lib/artist/public-profile";
+import { isStudioPortfolio, isPublishedPortfolio, artistPortfolioWorks, artistPortfolioPath } from "@/lib/artist/portfolio";
 import type { MetadataRoute } from "next";
 import { getContent } from "@/lib/data/store";
 import { DEFAULT_LOCALE, LOCALES, type Locale } from "@/lib/i18n/types";
@@ -41,7 +43,8 @@ const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").r
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const site = await getContent();
+  const content = await getContent();
+  const site = { ...content, artists: content.artists.filter(isPublicArtist), portfolios: content.portfolios.filter(p => isStudioPortfolio(p) && isPublishedPortfolio(p)) };
   const url = (l: Locale, path: string) => `${SITE_URL}/${l}${path ? `/${path}` : ""}`;
 
   const entries: MetadataRoute.Sitemap = [];
@@ -63,6 +66,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: "monthly",
         priority: 0.6,
         alternates: { languages: Object.fromEntries(LOCALES.map((l) => [l, url(l, path)])) },
+      });
+    }
+  }
+
+  for (const artist of site.artists) {
+    const paths = [artistPortfolioPath(artist.slug), ...artistPortfolioWorks(content.portfolios, artist.id).map(work => artistPortfolioPath(artist.slug, work.slug))];
+    for (const path of paths) {
+      entries.push({
+        url: url(DEFAULT_LOCALE, path.slice(1)), changeFrequency: "monthly", priority: 0.6,
+        alternates: { languages: Object.fromEntries(LOCALES.map(l => [l, url(l, path.slice(1))])) },
       });
     }
   }

@@ -124,7 +124,7 @@ function exportPDF(rows: ArtistRow[], title: string) {
         <td>${r.artist.signupCity ?? t(r.artist.location) ?? "—"}</td>
         <td dir="ltr">${r.artist.social?.instagram ? "@" + r.artist.social.instagram : "—"}</td>
         <td>${r.patterns.length}</td>
-        <td>${r.artist.rating > 0 ? r.artist.rating.toFixed(1) : "—"}</td>
+        <td>—</td>
         <td class="${r.status === "approved" ? "badge-ok" : r.status === "rejected" ? "badge-no" : "badge-wait"}">${statusLabel(r.status)}</td>
         <td>${r.user ? r.user.email : "—"}</td>
       </tr>`,
@@ -298,8 +298,8 @@ function ArtistDetailDrawer({
           <div className="grid grid-cols-3 gap-2">
             {[
               { label: "پترن‌ها", value: patterns.length, icon: <Palette className="h-3.5 w-3.5" /> },
-              { label: "دنبال‌کننده", value: artist.followers.toLocaleString("fa-IR"), icon: <Users className="h-3.5 w-3.5" /> },
-              { label: "امتیاز", value: artist.rating > 0 ? artist.rating.toFixed(1) : "—", icon: <Star className="h-3.5 w-3.5" /> },
+              { label: "دنبال‌کننده", value: "ثبت نمی‌شود", icon: <Users className="h-3.5 w-3.5" /> },
+              { label: "امتیاز", value: "ثبت نمی‌شود", icon: <Star className="h-3.5 w-3.5" /> },
             ].map((s) => (
               <div key={s.label} className="rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-center">
                 <div className="flex items-center justify-center gap-1 text-gray-400 mb-0.5">{s.icon}</div>
@@ -653,18 +653,8 @@ function ArtistCard({
           <Palette className="h-3 w-3" />
           {patterns.length} پترن
         </span>
-        {artist.rating > 0 && (
-          <span className="flex items-center gap-0.5">
-            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-            {artist.rating.toFixed(1)}
-          </span>
-        )}
-        {artist.followers > 0 && (
-          <span className="flex items-center gap-0.5">
-            <Users className="h-3 w-3" />
-            {artist.followers > 999 ? `${(artist.followers / 1000).toFixed(1)}k` : artist.followers}
-          </span>
-        )}
+
+
       </div>
 
       {/* Social pills */}

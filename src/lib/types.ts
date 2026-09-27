@@ -226,6 +226,8 @@ export interface PortfolioBlock {
 export type DraftStatus = "draft" | "pending_review" | "published" | "rejected";
 
 export interface Portfolio {
+  /** Public placement. Legacy CMS records default to site; artist submissions stay in artist portfolios. */
+  showcase?: "site" | "artist";
   id: ID;
   slug: string;
   title: Localized;

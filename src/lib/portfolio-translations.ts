@@ -41,12 +41,8 @@ export const tr: Record<string, Bilingual> = {
     fa: "آثار او در دوازده نمایشگاه داخلی و بین‌المللی به نمایش درآمده‌اند و مجموعه‌های خصوصی و عمومی متعددی این آثار را در برمی‌گیرند.",
     en: "Her works have been shown in twelve national and international exhibitions, with multiple private and public collections holding her pieces.",
   },
-  experience:  { fa: "+۱۵ سال تجربه", en: "15+ Years Experience" },
-  stat1Val:    { fa: "+۲۰۰",          en: "200+" },
   stat1Label:  { fa: "الگوی خلق‌شده", en: "Patterns Created" },
-  stat2Val:    { fa: "۱۲",            en: "12" },
   stat2Label:  { fa: "نمایشگاه",      en: "Exhibitions" },
-  stat3Val:    { fa: "+۱.۲k",         en: "1.2k+" },
   stat3Label:  { fa: "دانشجو",        en: "Students" },
 
   /* ---------- portfolio ---------- */
@@ -79,13 +75,9 @@ export const tr: Record<string, Bilingual> = {
   },
   deptLabel:   { fa: "گروه هنرهای تزئینی", en: "Decorative Arts Department" },
   rankLabel:   { fa: "استادیار",            en: "Assistant Professor" },
-  ach1Val:     { fa: "+۲۰۰",               en: "200+" },
   ach1Label:   { fa: "الگوی آموزشی",       en: "Teaching Patterns" },
-  ach2Val:     { fa: "۱۲",                 en: "12" },
   ach2Label:   { fa: "نمایشگاه",           en: "Exhibitions" },
-  ach3Val:     { fa: "+۱.۲k",              en: "1.2k+" },
   ach3Label:   { fa: "دانشجو فارغ‌التحصیل", en: "Graduates" },
-  ach4Val:     { fa: "۱۵+",               en: "15+" },
   ach4Label:   { fa: "سال تدریس",          en: "Years Teaching" },
   coursesTitle:{ fa: "دروس",               en: "Courses" },
 
